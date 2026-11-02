@@ -55,4 +55,27 @@ class Value:
         self.grad = 1
         for node in reversed(topo):
             node._backward()
-    
+    def __pow__(self, other):
+        assert isinstance(other, (int, float)), "only supporting int/float powers for now"
+        out = Value(self.data**other, (self,), f'**{other}')
+
+        def _backward():
+            self.grad += other * (self.data ** (other - 1)) * out.grad
+        out._backward = _backward
+
+        return out
+  
+    def __rmul__(self, other): # other * self
+        return self * other
+
+    def __truediv__(self, other): # self / other
+        return self * other**-1
+
+    def __neg__(self): # -self
+        return self * -1
+
+    def __sub__(self, other): # self - other
+        return self + (-other)
+
+    def __radd__(self, other): # other + self
+        return self + other
